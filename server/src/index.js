@@ -23,8 +23,28 @@ const server = http.createServer(app);
 initSocket(server);
 
 // ─── Security & utilities ───────────────────────────────────────────────────────
-app.use(helmet());
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+const ALLOWED_ORIGINS = [
+  CLIENT_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, mobile apps) or allowed origins
+    if (!origin) return callback(null, true);
+    if (
+      ALLOWED_ORIGINS.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      /\.up\.railway\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(compression());
 app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '5mb' }));

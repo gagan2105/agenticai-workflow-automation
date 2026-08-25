@@ -6,7 +6,18 @@ let io = null;
 const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: CLIENT_URL,
+      origin: (origin, callback) => {
+        if (
+          !origin ||
+          origin === CLIENT_URL ||
+          origin.startsWith('http://localhost') ||
+          /\.vercel\.app$/.test(origin) ||
+          /\.up\.railway\.app$/.test(origin)
+        ) {
+          return callback(null, true);
+        }
+        callback(new Error(`Socket CORS: origin ${origin} not allowed`));
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },

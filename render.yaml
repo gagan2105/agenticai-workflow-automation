@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: agentflow-ai-backend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node src/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CREDENTIAL_ENCRYPTION_KEY
+        value: 0000000000000000000000000000000000000000000000000000000000000001
+      - key: CLIENT_URL
+        value: https://agentflow-ai-client.vercel.app

@@ -33,13 +33,24 @@ export default function Integrations() {
   const handleConnect = async (provider) => {
     try {
       const { data } = await api.get(`/integrations/oauth/${provider}/start`);
-      // Simulating connection by directly creating integration in DB
-      await api.post('/integrations', {
-        provider,
-        status: 'connected',
-        accountEmail: `connected-${provider}@agentflow.ai`,
-      });
-      fetchStatus();
+      if (data.authUrl) {
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        const popup = window.open(
+          data.authUrl,
+          `Connect ${provider}`,
+          `width=${width},height=${height},top=${top},left=${left},scrollbars=yes`
+        );
+
+        const timer = setInterval(() => {
+          if (!popup || popup.closed) {
+            clearInterval(timer);
+            fetchStatus();
+          }
+        }, 1000);
+      }
     } catch {
       alert(`Failed to connect ${provider}`);
     }
